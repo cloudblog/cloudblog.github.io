@@ -296,7 +296,7 @@
             <blockquote>
 <p>荣幸之至，我们团队在实时日志分析、搜索项目中曾经应对过百万级的挑战，在这方面有长足的进步。本文以笔记和问答的形式记录了我们曾经遇到过的实际问题及解决方案，而非小白式的大数据科普文章。相信只有真正做过每秒近百万以上的实时日志处理业务，遇到过棘手问题，才能深刻感受我们当时越不过高坎的窘境与解决问题后的狂喜。</p>
 </blockquote>
-<h2 id="架构图及架构介绍"><a href="#架构图及架构介绍" class="headerlink" title="架构图及架构介绍"></a>架构图及架构介绍</h2><p><img src="media/14743649966128/14750305676852.jpg" alt=""></p>
+<h2 id="架构图及架构介绍"><a href="#架构图及架构介绍" class="headerlink" title="架构图及架构介绍"></a>架构图及架构介绍</h2><p><img src="/media/14743649966128/14750305676852.jpg" alt=""></p>
 <p>我们首先对架构做一个简单的介绍，在产生日志的服务器上通过agent(rsyslog或其它工具）把日志发送到数据平台的接收接口（nginx或flume等架设的http或tcp接口），通过kafka队列，经过Spark的ETL输出统一格式的日志到Kafka，进而使用Elasticsearch索引全量数据提供全文搜索服务，同时数据存储到我们内部的云图系统提供海量统计分析服务。最终用户打开我们定制开发的UI，即点即用，完成业务分析需求。</p>
 <p>架构不复杂，但一旦涉及海量和实时，必定充满挑战。我们对数据平台做了无数次优化，实则在不停得迭代回答以下几个问题：</p>
 <ul>
@@ -336,7 +336,7 @@
 <li>flume 原理：MemoryChannel的设计</li>
 </ul>
 <p>source：开启事务 -&gt; 存数据 -&gt; 放入私有的putlist-&gt;提交事务（消息进入channel，清空事务的takelist,putlist）<br>sink：开启事务 -&gt; 从channel取数据 -&gt; 放入私有的takelist-&gt;提交事务（消息进入channel，清空事务的takelist,putlist）</p>
-<p><img src="media/14743649966128/14744317605141.jpg" alt=""></p>
+<p><img src="/media/14743649966128/14744317605141.jpg" alt=""></p>
 <p>注：上图非原创，原图地址：<a href="http://www.cnblogs.com/dongqingswt/p/5070776.html" target="_blank" rel="external">http://www.cnblogs.com/dongqingswt/p/5070776.html</a></p>
 <ul>
 <li>flume 原理：AvroSource,AvroSink事务</li>
@@ -445,7 +445,7 @@
 <p>(b). virtual memory exceeded error : fork 出了很多 python进程，每个python 进程占用 400M + virtual memory</p>
 <p>(c) kafka-python package 向 kafka 0.9 写数据存在未知bug 导致 kafka 集群不可用(invalid message size)</p>
 <p>(d) 处理同样量级的数据，需要更多资源（导致某些节点负载过高，卡住这些节点上的其它spark job）</p>
-<p>(e) task processing time 极度不均衡导致处理能力下降（单个task processing time 远大于平均）<br><img src="media/14743649966128/14757419559210.jpg" alt=""></p>
+<p>(e) task processing time 极度不均衡导致处理能力下降（单个task processing time 远大于平均）<br><img src="/media/14743649966128/14757419559210.jpg" alt=""></p>
 <p>(f) 无法实现广播变量（spark 官方doc的例子可能是假的）</p>
 <p>结论：大规模 spark streaming，输出是 kafka 的不要使用 python 作为开发语言。</p>
 <ul>
@@ -463,8 +463,8 @@
 <p>spark streaming的stopGracefully策略允许处理完receiver已收到但还未处理的数据后，再停止application。</p>
 <p>spark streaming的checkpoint 可以做到至少处理一次，但会对spark streaming有一定的性能损耗。</p>
 <p>kafkaDirectStream 可以实现先处理完数据，再更新offset,也可以保证至少处理一次，在这种场景下不需要spark streaming 的 checkpoint 做保证。</p>
-<p><img src="media/14743649966128/14744316357249.jpg" alt=""></p>
-<p><img src="media/14743649966128/14744315747639.jpg" alt=""></p>
+<p><img src="/media/14743649966128/14744316357249.jpg" alt=""></p>
+<p><img src="/media/14743649966128/14744315747639.jpg" alt=""></p>
 <ul>
 <li>问题5: kafkaDirectStream和kafkaS1tream对比 ？</li>
 </ul>
@@ -480,8 +480,8 @@
 </ul>
 <p>进入spark 监控界面，查看Jobs里的各个stages，确认是普遍都慢还是个别stages耗时较长；<br>同时确认是每个executor上的task耗时长，还是个别executor上执行的task耗时长。如果是个别executor的task执行时间较长，有可能是这个executor所在的节点CPU耗尽或负载较大。</p>
 <p>如下图，有2个executor，其中一个执行task耗时明显比另外一个时间长</p>
-<p><img src="media/14743649966128/14761729129404.jpg" alt=""></p>
-<p>如果在executors监控页面中也看到某个executor的task time明显长于其它executor，说明在此executor上，可能有很多stages的task 执行时间都过长。<br><img src="media/14743649966128/14761729962744.jpg" alt=""></p>
+<p><img src="/media/14743649966128/14761729129404.jpg" alt=""></p>
+<p>如果在executors监控页面中也看到某个executor的task time明显长于其它executor，说明在此executor上，可能有很多stages的task 执行时间都过长。<br><img src="/media/14743649966128/14761729962744.jpg" alt=""></p>
 <h2 id="Elasticsearch"><a href="#Elasticsearch" class="headerlink" title="Elasticsearch"></a>Elasticsearch</h2><ul>
 <li><p>问题1: 如何加快 recovery 速度？</p>
 </li>
